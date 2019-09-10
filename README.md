@@ -1,17 +1,18 @@
 # LINQ to A\*
 
-[![Build Status](https://travis-ci.org/rvhuang/linq-to-astar.svg?branch=master)](https://travis-ci.org/rvhuang/linq-to-astar) [![Build status](https://rvhuang.visualstudio.com/_apis/public/build/definitions/31750fb1-11f7-41f3-9a90-66f5a70f0bc6/3/badge)](https://rvhuang.visualstudio.com/MyFirstProject/_build/latest?definitionId=3) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/rvhuang/linq-to-astar/blob/master/LICENSE) [![NuGet](https://img.shields.io/nuget/vpre/linq-to-astar.svg)](https://www.nuget.org/packages/linq-to-astar/) [![Total alerts](https://img.shields.io/lgtm/alerts/g/rvhuang/linq-to-astar.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/rvhuang/linq-to-astar/alerts/)
+[![Build Status](https://travis-ci.org/rvhuang/linq-to-astar.svg?branch=master)](https://travis-ci.org/rvhuang/linq-to-astar) [![Build status](https://dev.azure.com/rvhuang/_apis/public/build/definitions/31750fb1-11f7-41f3-9a90-66f5a70f0bc6/3/badge)](https://dev.azure.com/rvhuang/_apis/public/build/definitions/31750fb1-11f7-41f3-9a90-66f5a70f0bc6/3/badge) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/rvhuang/linq-to-astar/blob/master/LICENSE) [![NuGet](https://img.shields.io/nuget/vpre/linq-to-astar.svg)](https://www.nuget.org/packages/linq-to-astar/) [![Total alerts](https://img.shields.io/lgtm/alerts/g/rvhuang/linq-to-astar.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/rvhuang/linq-to-astar/alerts/)
 
 **LINQ to A\*** is a [POC](https://www.oxfordlearnersdictionaries.com/definition/english/proof-of-concept) aimed to bring LINQ to [A\*](https://en.wikipedia.org/wiki/A*_search_algorithm) and other heuristic search algorithms. The library enables LINQ to be used as the query expression to the algorithm. To put it simply, **A\* written in C#, used with LINQ**.
 
 The library defines a set of generic APIs that can be applied to any problem, as long as the problem suits the algorithm. By taking advantage of the power of LINQ, the library is not only about re-implementing the algorithms in C#, but also giving new ability and flexibility to the algorithms.
 
-## Why LINQ
+## How It Works
 
-* Great human-readability and maintainability of algorithm using.
-* Structural, object-oriented, consice programming model for various heuristic algorithms.
-* Easy to learn and use.
-* **Looking cool**. (very important)
+The following figure gives a brief overview about how the librarly works. 
+
+[![How it works](docs/how-it-works.svg)](docs/how-it-works.svg)
+
+The initial conditions are given with the APIs called **Factory Method**. The solution is produced when one of query executions is called.
 
 ## Getting Started
 
@@ -46,7 +47,7 @@ The LINQ expression consists of the following clauses:
 2. The `where` clause sets up the boundary but can also be used for checking invalid steps.
 3. The `orderby` clause serves as *h(n)* (aka [Heuristic](https://en.wikipedia.org/wiki/Heuristic)) that estimates the cost of the cheapest path from *n* (the current step) to the goal.
 
-If a solution is found, the enumeration returns each step in deferred execution. Otherwise, an empty collection is returned.
+If a solution is found (in deferred execution), the enumeration returns each of steps. Otherwise, an empty collection is returned.
 
 See the document [Expression Examples](docs/Expression-Examples.md) for more examples.
 
@@ -96,7 +97,7 @@ var solution = from step in queryable.Except(GetObstacles())
 The solution finding process of an algorithm can be observed by implementing the interface `IAlgorithmObserverFactory<TStep>` and passing its instance to the new signature of the factory method. The observed algorithm will: 
 
 1. Create an `IProgress<T>` object with the `IAlgorithmObserverFactory<TStep>` instance, where `T` is `AlgorithmState<TFactor, TStep>`.
-2. Report the progress by creating `AlgorithmState<TFactor, TStep>` objects and passing to `IProgress<T>.Report()`.
+2. Report the progress by creating a series of `AlgorithmState<TFactor, TStep>` instances and passing each of them to `IProgress<T>.Report()`.
 
 The following snippet shows how to observe A\* algorithm.
 
@@ -112,6 +113,8 @@ var solution = from step in queryable.Except(GetObstacles())
 // The algorithm starts finding the solution while reporting the progress.
 var array = solution.ToArray();
 ```
+
+The Open List Analysis of [Pathfinding Laboratory](https://pathfinding-lab.codedwith.fun/) largely relies on this feature.
 
 ## Supported LINQ Clauses and Operations
 
@@ -133,7 +136,7 @@ var array = solution.ToArray();
 * `ThenBy()` - serves as heuristic function but will only be referred when previous one evaluates two nodes as equal.
 * `ThenByDescending()` - serves as reverse heuristic function but will only be referred when previous one evaluates two nodes as equal.
 
-### Operation
+### Execution
 
 The operations below provide optimized performance to replace `Enumerable` extensions.
 
